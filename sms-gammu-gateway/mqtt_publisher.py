@@ -666,25 +666,32 @@ class MQTTPublisher:
                     
                     # Check for new SMS with connectivity tracking
                     all_sms = self.track_gammu_operation("retrieveAllSms", retrieveAllSms, gammu_machine)
+                    previous_count = last_sms_count
                     current_count = len(all_sms)
                     
                     # If there are new SMS since last check
-                    if current_count > last_sms_count:
-                        logger.info(f"📱 Detected {current_count - last_sms_count} new SMS messages")
+                    if current_count > previous_count:
+                        logger.info(f"📱 Detected {current_count - previous_count} new SMS messages")
                         
                         # Process new SMS (from the end, newest first)
-                        for i in range(last_sms_count, current_count):
+                        for i in range(previous_count, current_count):
                             if i < len(all_sms):
-                                sms = all_sms[i].copy()
+                                sms_record = all_sms[i]
+                                sms = sms_record.copy()
                                 sms.pop("Locations", None)
                                 
                                 # Publish to MQTT
                                 self.publish_sms_received(sms)
                                 
-                                # Optionally delete after processing
-                                # deleteSms(gammu_machine, all_sms[i])
-                    
-                    last_sms_count = current_count
+                                # Delete SMS from SIM after it has been processed
+                                try:
+                                    self.track_gammu_operation("deleteSms", deleteSms, gammu_machine, sms_record)
+                                    logger.debug(f"Deleted SMS from {sms.get('Number', '')} after publishing to MQTT")
+                                except Exception as delete_error:
+                                    logger.warning(f"Could not delete SMS after publishing: {delete_error}")
+                        last_sms_count = previous_count
+                    else:
+                        last_sms_count = current_count
                     
                 except Exception as e:
                     logger.error(f"Error monitoring SMS: {e}")
@@ -731,3 +738,5 @@ class MQTTPublisher:
             self.client.loop_stop()
             self.client.disconnect()
             logger.info("Disconnected from MQTT broker")
+
+
