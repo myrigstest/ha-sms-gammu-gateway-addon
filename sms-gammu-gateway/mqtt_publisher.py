@@ -9,6 +9,7 @@ import logging
 import threading
 from typing import Optional, Dict, Any
 import paho.mqtt.client as mqtt
+from support import encodeSms, message_requires_unicode
 
 logger = logging.getLogger(__name__)
 
@@ -196,6 +197,28 @@ class MQTTPublisher:
                 
         except Exception as e:
             logger.error(f"Error processing MQTT message: {e}")
+
+    def _determine_unicode_mode(self, text, explicit_flag=None):
+        """Decide whether message should be sent using Unicode encoding."""
+        text_requires_unicode = message_requires_unicode(text)
+
+        if explicit_flag is None:
+            if text_requires_unicode:
+                logger.info("Detected non-ASCII characters in MQTT SMS payload, enabling Unicode encoding automatically")
+            return text_requires_unicode
+
+        if isinstance(explicit_flag, bool):
+            user_choice = explicit_flag
+        elif isinstance(explicit_flag, (int, float)):
+            user_choice = bool(explicit_flag)
+        else:
+            user_choice = str(explicit_flag).lower() in ('1', 'true', 'yes', 'on')
+
+        if text_requires_unicode and not user_choice:
+            logger.info("Detected non-ASCII characters in MQTT SMS payload, overriding unicode flag to True")
+            return True
+
+        return user_choice
     
     def _handle_sms_send_command(self, payload):
         """Handle SMS send command from MQTT"""
@@ -204,7 +227,8 @@ class MQTTPublisher:
             data = json.loads(payload)
             number = data.get('number')
             text = data.get('text')
-            unicode_mode = data.get('unicode', False)  # Extract unicode parameter
+            unicode_flag = data.get('unicode')
+            unicode_mode = self._determine_unicode_mode(text, unicode_flag)
             
             if not number or not text:
                 logger.error("SMS send command missing required fields: number or text")
@@ -226,13 +250,11 @@ class MQTTPublisher:
     def _send_sms_via_gammu(self, number, text, unicode_mode=False):
         """Send SMS using gammu machine"""
         try:
-            # Import gammu and support functions
-            from support import encodeSms
-            
+            unicode_enabled = self._determine_unicode_mode(text, unicode_mode)
             # Prepare SMS info
             smsinfo = {
                 "Class": -1,
-                "Unicode": unicode_mode,
+                "Unicode": unicode_enabled,
                 "Entries": [
                     {
                         "ID": "ConcatenatedTextLong",
@@ -240,6 +262,8 @@ class MQTTPublisher:
                     }
                 ],
             }
+            if unicode_enabled:
+                smsinfo["Coding"] = "Unicode"
             
             # Encode and send SMS
             messages = encodeSms(smsinfo)
@@ -267,7 +291,7 @@ class MQTTPublisher:
                     "text": text,
                     "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
-                self.client.publish(status_topic, json.dumps(status_data), retain=False)
+                self.client.publish(status_topic, json.dumps(status_data, ensure_ascii=False), retain=False)
                 
         except Exception as e:
             error_msg = str(e)
@@ -292,7 +316,7 @@ class MQTTPublisher:
                     "text": text,
                     "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
-                self.client.publish(status_topic, json.dumps(status_data), retain=False)
+                self.client.publish(status_topic, json.dumps(status_data, ensure_ascii=False), retain=False)
     
     def _handle_button_sms_send(self):
         """Handle SMS send when button is pressed using current text inputs"""
@@ -308,16 +332,15 @@ class MQTTPublisher:
                     "message": f"Please fill in phone number and message text first. Current: phone='{self.current_phone_number}', message='{self.current_message_text}'",
                     "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
-                self.client.publish(status_topic, json.dumps(status_data), retain=False)
+                self.client.publish(status_topic, json.dumps(status_data, ensure_ascii=False), retain=False)
             logger.warning(f"Button pressed but fields empty: phone='{self.current_phone_number}', message='{self.current_message_text}'")
             return
         
         # Send SMS using current values
-        logger.info(f"Button SMS send: {self.current_phone_number} -> {self.current_message_text}")
+        unicode_mode = self._determine_unicode_mode(self.current_message_text, None)
+        logger.info(f"Button SMS send: {self.current_phone_number} -> {self.current_message_text} (unicode: {unicode_mode})")
         if hasattr(self, 'gammu_machine') and self.gammu_machine:
-            # Use unicode=False as default for button sends (same as original behavior)
-            # Could be enhanced later to support unicode selection in UI
-            self._send_sms_via_gammu(self.current_phone_number, self.current_message_text, unicode_mode=False)
+            self._send_sms_via_gammu(self.current_phone_number, self.current_message_text, unicode_mode=unicode_mode)
             # Always clear fields after send attempt (success or failure)
             self._clear_text_fields()
         else:
@@ -513,7 +536,7 @@ class MQTTPublisher:
         ]
         
         for topic, config in discoveries:
-            self.client.publish(topic, json.dumps(config), retain=True)
+            self.client.publish(topic, json.dumps(config, ensure_ascii=False), retain=True)
         
         logger.info("Published MQTT discovery configurations including SMS send button")
         
@@ -534,7 +557,7 @@ class MQTTPublisher:
             return
             
         topic = f"{self.topic_prefix}/signal/state"
-        self.client.publish(topic, json.dumps(signal_data), retain=True)
+        self.client.publish(topic, json.dumps(signal_data, ensure_ascii=False), retain=True)
         logger.info(f"📡 Published signal strength to MQTT: {signal_data.get('SignalPercent', 'N/A')}%")
     
     def publish_network_info(self, network_data: Dict[str, Any]):
@@ -543,7 +566,7 @@ class MQTTPublisher:
             return
             
         topic = f"{self.topic_prefix}/network/state"
-        self.client.publish(topic, json.dumps(network_data), retain=True)
+        self.client.publish(topic, json.dumps(network_data, ensure_ascii=False), retain=True)
         logger.info(f"📡 Published network info to MQTT: {network_data.get('NetworkName', 'Unknown')}")
     
     def publish_sms_received(self, sms_data: Dict[str, Any]):
@@ -555,7 +578,7 @@ class MQTTPublisher:
         sms_data['timestamp'] = time.strftime('%Y-%m-%d %H:%M:%S')
         
         topic = f"{self.topic_prefix}/sms/state"
-        self.client.publish(topic, json.dumps(sms_data))
+        self.client.publish(topic, json.dumps(sms_data, ensure_ascii=False))
         
         logger.info(f"📡 Published SMS to MQTT: {sms_data.get('Number', 'Unknown')} -> {sms_data.get('Text', '')}")
     
@@ -567,7 +590,7 @@ class MQTTPublisher:
         status_data = self.device_tracker.get_status_data()
         
         topic = f"{self.topic_prefix}/device_status/state"
-        self.client.publish(topic, json.dumps(status_data), retain=True)
+        self.client.publish(topic, json.dumps(status_data, ensure_ascii=False), retain=True)
         
         # Log status changes
         status = status_data.get('status')
@@ -621,7 +644,7 @@ class MQTTPublisher:
             # Publish empty SMS state initially
             empty_sms = {"Date": "", "Number": "", "State": "", "Text": "", "timestamp": ""}
             topic = f"{self.topic_prefix}/sms/state"
-            self.client.publish(topic, json.dumps(empty_sms), retain=True)
+            self.client.publish(topic, json.dumps(empty_sms, ensure_ascii=False), retain=True)
             
             logger.info("📡 Published initial states to MQTT")
             

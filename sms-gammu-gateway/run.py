@@ -14,7 +14,7 @@ from flask import Flask, request
 from flask_httpauth import HTTPBasicAuth
 from flask_restx import Api, Resource, fields, reqparse
 
-from support import init_state_machine, retrieveAllSms, deleteSms, encodeSms
+from support import init_state_machine, retrieveAllSms, deleteSms, encodeSms, message_requires_unicode
 from mqtt_publisher import MQTTPublisher
 from gammu import GSMNetworks
 
@@ -70,6 +70,8 @@ mqtt_publisher = MQTTPublisher(config)
 mqtt_publisher.set_gammu_machine(machine)
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False  # Allow Cyrillic characters in JSON responses
+app.config['RESTX_JSON'] = {'ensure_ascii': False}
 
 # Check if running under Ingress
 import os
@@ -202,7 +204,7 @@ sms_model = api.model('SMS', {
     'text': fields.String(required=True, description='SMS message text', example='Hello, how are you?'),
     'number': fields.String(required=True, description='Phone number (international format)', example='+420123456789'),
     'smsc': fields.String(required=False, description='SMS Center number (optional)', example='+420603052000'),
-    'unicode': fields.Boolean(required=False, description='Use Unicode encoding', default=False)
+    'unicode': fields.Boolean(required=False, description='Force Unicode encoding (auto-enabled for non-ASCII text)', default=False)
 })
 
 sms_response = api.model('SMS Response', {
@@ -266,7 +268,7 @@ class SmsCollection(Resource):
         parser.add_argument('number', required=False, help='Phone number(s), comma separated')
         parser.add_argument('target', required=False, help='Phone number (alias for number)')
         parser.add_argument('smsc', required=False, help='SMS Center number (optional)')
-        parser.add_argument('unicode', type=bool, required=False, default=False, help='Use Unicode encoding')
+        parser.add_argument('unicode', required=False, help='Use Unicode encoding (true/false, auto-detected if omitted)')
         
         args = parser.parse_args()
         
@@ -279,10 +281,20 @@ class SmsCollection(Resource):
         sms_number = args.get('number') or args.get('target')
         if not sms_number:
             return {"status": 400, "message": "Missing required field: number or target"}, 400
+
+        unicode_arg = args.get('unicode')
+        unicode_requested = None
+        if unicode_arg is not None:
+            unicode_requested = str(unicode_arg).lower() in ('1', 'true', 'yes', 'on')
+        
+        unicode_enabled = bool(unicode_requested) if unicode_requested is not None else False
+        if message_requires_unicode(sms_text) and not unicode_enabled:
+            unicode_enabled = True
+            logging.info("Detected non-ASCII characters in SMS text, enabling Unicode encoding automatically")
         
         smsinfo = {
             "Class": -1,
-            "Unicode": args.get('unicode', False),
+            "Unicode": unicode_enabled,
             "Entries": [
                 {
                     "ID": "ConcatenatedTextLong",
@@ -290,6 +302,9 @@ class SmsCollection(Resource):
                 }
             ],
         }
+        if unicode_enabled:
+            smsinfo["Coding"] = "Unicode"
+        
         messages = []
         for number in sms_number.split(','):
             for message in encodeSms(smsinfo):

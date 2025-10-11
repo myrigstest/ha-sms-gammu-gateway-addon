@@ -123,6 +123,13 @@ def deleteSms(machine, sms):
         print(f"Error deleting SMS: {e}")
 
 
+def message_requires_unicode(text):
+    """Check if SMS text needs Unicode encoding (e.g. contains Cyrillic)"""
+    if not text:
+        return False
+    return any(ord(char) > 127 for char in text)
+
+
 def encodeSms(smsinfo):
     """Encode SMS for sending"""
     return gammu.EncodeSMS(smsinfo)
