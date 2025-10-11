@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2025-10-11
+
+### Highlights
+- First standalone release with full Unicode (Cyrillic) support enabled by default for REST, MQTT and UI sending flows
+- Credentials now sourced through Home Assistant `!secret` references, keeping sensitive data out of `options.json`
+- Debug mode delivers verbose logs plus Gammu traces for easier modem diagnostics
+
+### Migration Notes
+- Ensure `secrets.yaml` contains `gammu_username`, `gammu_password`, `mqtt_username`, `mqtt_password`
+- Restart the add-on after upgrading so the new configuration scheme takes effect
+
 ## [1.3.4] - 2025-10-11
 
 ### Added

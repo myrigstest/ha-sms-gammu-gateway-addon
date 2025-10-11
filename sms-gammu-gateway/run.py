@@ -233,7 +233,7 @@ def home():
             
             <div class="status">
                 <strong>✅ Gateway is running properly</strong><br>
-                Version: 1.3.4
+                Version: 2.0.0
             </div>
             
             <a href="http://''' + request.host.split(':')[0] + ''':5000/docs/" 
@@ -263,7 +263,7 @@ def home():
 # Put Swagger UI on /docs/ path for direct access via port 5000
 api = Api(
     app, 
-    version='1.3.4',
+    version='2.0.0',
     title='SMS Gammu Gateway API',
     description='REST API for sending and receiving SMS messages via USB GSM modems (SIM800L, Huawei, etc.). Modern replacement for deprecated SMS notifications via GSM-modem integration.',
     doc='/docs/',  # Swagger UI on /docs/ path
@@ -484,7 +484,7 @@ class Reset(Resource):
         return {"status": 200, "message": "Reset done"}, 200
 
 if __name__ == '__main__':
-    print(f"🚀 SMS Gammu Gateway v1.3.4 started successfully!")
+    print(f"🚀 SMS Gammu Gateway v2.0.0 started successfully!")
     print(f"📱 Device: {device_path}")
     print(f"🌐 API available on port {port}")
     print(f"🏠 Web UI: http://localhost:{port}/")
