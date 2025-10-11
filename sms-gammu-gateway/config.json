@@ -1,6 +1,6 @@
 {
   "name": "SMS Gammu Gateway",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "slug": "sms_gammu_gateway",
   "description": "REST API SMS Gateway using python-gammu for USB GSM modems (SIM800L, Huawei, etc.). Modern replacement for deprecated SMS notifications via GSM-modem integration.",
   "startup": "services",
@@ -23,7 +23,8 @@
     "mqtt_password": "",
     "mqtt_topic_prefix": "homeassistant/sensor/sms_gateway",
     "sms_monitoring_enabled": true,
-    "sms_check_interval": 60
+    "sms_check_interval": 60,
+    "debug": false
   },
   "schema": {
     "device_path": "str",
@@ -39,7 +40,8 @@
     "mqtt_password": "str?",
     "mqtt_topic_prefix": "str",
     "sms_monitoring_enabled": "bool",
-    "sms_check_interval": "int(30,300)"
+    "sms_check_interval": "int(30,300)",
+    "debug": "bool"
   },
   "ingress": true,
   "ingress_port": 5000,

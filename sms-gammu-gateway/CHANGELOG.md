@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.3] - 2025-10-11
+
+### Added
+- Optional `debug` configuration flag to enable verbose logging and Gammu trace output at `/data/gammu-debug.log`
+
+### Changed
+- Automatic Unicode detection for REST, MQTT and button sends so Cyrillic text is encoded without manual flags
+- MQTT payloads and API responses now keep non-ASCII characters by disabling ASCII-only JSON serialisation
+
 ## [1.3.2] - 2025-01-21
 
 ### Changed

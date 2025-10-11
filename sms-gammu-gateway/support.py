@@ -10,16 +10,27 @@ import sys
 import os
 import gammu
 
+GAMMU_DEBUG_LOG = '/data/gammu-debug.log'
 
-def init_state_machine(pin, device_path='/dev/ttyUSB0'):
+
+def init_state_machine(pin, device_path='/dev/ttyUSB0', debug=False):
     """Initialize gammu state machine with HA add-on config"""
     sm = gammu.StateMachine()
-    
+
     # Create gammu config dynamically
-    config_content = f"""[gammu]
-device = {device_path}
-connection = at
-"""
+    config_lines = [
+        "[gammu]",
+        f"device = {device_path}",
+        "connection = at",
+    ]
+
+    if debug:
+        config_lines.extend([
+            f"logfile = {GAMMU_DEBUG_LOG}",
+            "logformat = textalldate",
+        ])
+
+    config_content = "\n".join(config_lines) + "\n"
     
     # Write config to temporary file
     config_file = '/tmp/gammu.config'
@@ -27,6 +38,15 @@ connection = at
         f.write(config_content)
     
     sm.ReadConfig(Filename=config_file)
+
+    if debug:
+        try:
+            sm.SetDebugFile(GAMMU_DEBUG_LOG)
+            log_level = getattr(gammu, 'LOG_DEBUG', None)
+            if log_level is not None:
+                sm.SetDebugLevel(log_level)
+        except Exception as debug_error:
+            print(f"Warning: Could not enable Gammu debug logging: {debug_error}")
     
     try:
         sm.Init()

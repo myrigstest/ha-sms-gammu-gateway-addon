@@ -22,6 +22,7 @@ This add-on provides a complete SMS gateway solution for Home Assistant, replaci
 - **Text Input Fields** directly in Home Assistant device
 - **Smart Button** for easy SMS sending from UI
 - **Phone Number Persistence** - keeps number for multiple messages
+- **Automatic Unicode Detection** - Cyrillic and other non-ASCII texts are handled without extra flags
 
 ### 📊 Device Monitoring
 - **Signal Strength** sensor with percentage display
@@ -67,6 +68,7 @@ This add-on provides a complete SMS gateway solution for Home Assistant, replaci
 | `ssl` | `false` | Enable HTTPS |
 | `username` | `admin` | API username |
 | `password` | `password` | API password (change this!) |
+| `debug` | `false` | Enable verbose logging and create `/data/gammu-debug.log` |
 
 ### MQTT Settings (Optional)
 
@@ -97,6 +99,7 @@ mqtt_username: ""
 mqtt_password: ""
 sms_monitoring_enabled: true
 sms_check_interval: 60
+debug: false
 ```
 
 ## 🏠 Home Assistant Integration
@@ -212,6 +215,12 @@ Access full API documentation at: `http://your-ha-ip:5000/docs/`
 - Verify SIM card has credit
 - Ensure PIN is correct or disabled
 - Check network registration status
+
+### Enable Debug Logs
+- Set `debug: true` in the add-on configuration
+- Restart the add-on to regenerate verbose logs
+- Review the supervisor log and the `/data/gammu-debug.log` file for modem communication traces
+- Turn debug back off once finished to avoid large log files
 
 ### MQTT Not Working
 - Verify MQTT broker is running
