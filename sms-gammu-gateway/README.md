@@ -66,8 +66,8 @@ This add-on provides a complete SMS gateway solution for Home Assistant, replaci
 | `pin` | `""` | SIM card PIN (leave empty if no PIN) |
 | `port` | `5000` | API port |
 | `ssl` | `false` | Enable HTTPS |
-| `username` | `admin` | API username |
-| `password` | `password` | API password (change this!) |
+| `username` | `!secret gammu_username` | API username (stored in `secrets.yaml`) |
+| `password` | `!secret gammu_password` | API password (stored in `secrets.yaml`) |
 | `debug` | `false` | Enable verbose logging and create `/data/gammu-debug.log` |
 
 ### MQTT Settings (Optional)
@@ -77,11 +77,13 @@ This add-on provides a complete SMS gateway solution for Home Assistant, replaci
 | `mqtt_enabled` | `false` | Enable MQTT integration |
 | `mqtt_host` | `core-mosquitto` | MQTT broker hostname |
 | `mqtt_port` | `1883` | MQTT broker port |
-| `mqtt_username` | `""` | MQTT username |
-| `mqtt_password` | `""` | MQTT password |
+| `mqtt_username` | `!secret mqtt_username` | MQTT username (stored in `secrets.yaml`) |
+| `mqtt_password` | `!secret mqtt_password` | MQTT password (stored in `secrets.yaml`) |
 | `mqtt_topic_prefix` | `homeassistant/sensor/sms_gateway` | Topic prefix |
 | `sms_monitoring_enabled` | `true` | Auto-detect incoming SMS |
 | `sms_check_interval` | `60` | SMS check interval (seconds) |
+
+> ℹ️ Все значения с `!secret` подставляются автоматически из `/config/secrets.yaml` (или `/data/secrets.yaml`) при запуске аддона.
 
 ### Example Configuration
 
@@ -90,13 +92,13 @@ device_path: "/dev/ttyUSB0"
 pin: ""
 port: 5000
 ssl: false
-username: "admin"
-password: "your_secure_password"
+username: "!secret gammu_username"
+password: "!secret gammu_password"
 mqtt_enabled: true
 mqtt_host: "core-mosquitto"
 mqtt_port: 1883
-mqtt_username: ""
-mqtt_password: ""
+mqtt_username: "!secret mqtt_username"
+mqtt_password: "!secret mqtt_password"
 sms_monitoring_enabled: true
 sms_check_interval: 60
 debug: false

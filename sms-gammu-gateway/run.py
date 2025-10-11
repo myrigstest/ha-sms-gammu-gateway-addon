@@ -10,6 +10,7 @@ Licensed under Apache License 2.0
 import os
 import json
 import logging
+import yaml
 from flask import Flask, request
 from flask_httpauth import HTTPBasicAuth
 from flask_restx import Api, Resource, fields, reqparse
@@ -53,8 +54,88 @@ def load_ha_config():
             'debug': False
         }
 
+SECRET_DIRECTIVE = '!secret'
+SECRET_FILES = (
+    '/config/secrets.yaml',
+    '/config/secrets.yml',
+    '/data/secrets.yaml',
+    '/data/secrets.yml',
+)
+_secrets_cache = None
+_missing_secret_keys = set()
+
+
+def _load_secrets():
+    """Load secrets from known Home Assistant paths."""
+    secrets = {}
+    for path in SECRET_FILES:
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path, 'r', encoding='utf-8') as secret_file:
+                data = yaml.safe_load(secret_file) or {}
+                if isinstance(data, dict):
+                    # Later files can override earlier ones
+                    secrets.update({str(key): value for key, value in data.items()})
+                else:
+                    logging.warning("Secrets file %s does not contain a mapping, skipping", path)
+        except Exception as err:
+            logging.warning("Failed to read secrets from %s: %s", path, err)
+    return secrets
+
+
+def _resolve_secret_directive(value):
+    """Resolve !secret directive values to concrete secrets."""
+    global _secrets_cache
+    if not isinstance(value, str):
+        return value
+
+    stripped = value.strip()
+    if not stripped.lower().startswith(SECRET_DIRECTIVE):
+        return value
+
+    parts = stripped.split(None, 1)
+    if len(parts) != 2 or not parts[1].strip():
+        logging.warning("Secret directive '%s' is missing a secret name", value)
+        return ""
+
+    secret_name = parts[1].strip()
+
+    if _secrets_cache is None:
+        _secrets_cache = _load_secrets()
+
+    if secret_name not in _secrets_cache:
+        if secret_name not in _missing_secret_keys:
+            logging.warning("Secret '%s' not found in secrets files, using empty value", secret_name)
+            _missing_secret_keys.add(secret_name)
+        return ""
+
+    secret_value = _secrets_cache[secret_name]
+    # Convert non-string primitives to strings for consistency with config values
+    if isinstance(secret_value, (int, float, bool)):
+        return str(secret_value)
+    if secret_value is None:
+        logging.warning("Secret '%s' is defined but empty, using empty value", secret_name)
+        return ""
+    if not isinstance(secret_value, str):
+        logging.warning("Secret '%s' has unsupported type %s, converting to string", secret_name, type(secret_value))
+        return str(secret_value)
+    return secret_value
+
+
+def _resolve_secrets_in_structure(data):
+    """Recursively resolve secrets in dicts/lists."""
+    if isinstance(data, dict):
+        return {key: _resolve_secrets_in_structure(value) for key, value in data.items()}
+    if isinstance(data, list):
+        return [_resolve_secrets_in_structure(item) for item in data]
+    if isinstance(data, str):
+        return _resolve_secret_directive(data)
+    return data
+
 # Load configuration
 config = load_ha_config()
+config = _resolve_secrets_in_structure(config)
 pin = config.get('pin') if config.get('pin') else None
 ssl = config.get('ssl', False)
 port = config.get('port', 5000)
@@ -81,7 +162,6 @@ app.config['JSON_AS_ASCII'] = False  # Allow Cyrillic characters in JSON respons
 app.config['RESTX_JSON'] = {'ensure_ascii': False}
 
 # Check if running under Ingress
-import os
 ingress_path = os.environ.get('INGRESS_PATH', '')
 
 # Create simple HTML page for Ingress
@@ -153,7 +233,7 @@ def home():
             
             <div class="status">
                 <strong>✅ Gateway is running properly</strong><br>
-                Version: 1.3.3
+                Version: 1.3.4
             </div>
             
             <a href="http://''' + request.host.split(':')[0] + ''':5000/docs/" 
@@ -183,7 +263,7 @@ def home():
 # Put Swagger UI on /docs/ path for direct access via port 5000
 api = Api(
     app, 
-    version='1.3.3',
+    version='1.3.4',
     title='SMS Gammu Gateway API',
     description='REST API for sending and receiving SMS messages via USB GSM modems (SIM800L, Huawei, etc.). Modern replacement for deprecated SMS notifications via GSM-modem integration.',
     doc='/docs/',  # Swagger UI on /docs/ path
@@ -404,7 +484,7 @@ class Reset(Resource):
         return {"status": 200, "message": "Reset done"}, 200
 
 if __name__ == '__main__':
-    print(f"🚀 SMS Gammu Gateway v1.3.3 started successfully!")
+    print(f"🚀 SMS Gammu Gateway v1.3.4 started successfully!")
     print(f"📱 Device: {device_path}")
     print(f"🌐 API available on port {port}")
     print(f"🏠 Web UI: http://localhost:{port}/")

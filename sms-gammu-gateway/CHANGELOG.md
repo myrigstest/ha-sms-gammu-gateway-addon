@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.4] - 2025-10-11
+
+### Added
+- Support the Home Assistant `!secret` directive for username/password fields (REST and MQTT)
+
+### Changed
+- Default configuration now references `secrets.yaml` entries for credentials to keep sensitive data out of `options.json`
+
 ## [1.3.3] - 2025-10-11
 
 ### Added
