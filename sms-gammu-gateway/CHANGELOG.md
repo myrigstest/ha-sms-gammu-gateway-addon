@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - First standalone release with full Unicode (Cyrillic) support enabled by default for REST, MQTT and UI sending flows
 - Credentials now sourced through Home Assistant `!secret` references, keeping sensitive data out of `options.json`
 - Debug mode delivers verbose logs plus Gammu traces for easier modem diagnostics
+- Project moved under the new repository https://github.com/dima11235/ha-sms-gammu-gateway-addon with refreshed documentation and credits
 
 ### Migration Notes
 - Ensure `secrets.yaml` contains `gammu_username`, `gammu_password`, `mqtt_username`, `mqtt_password`

@@ -48,7 +48,7 @@ LABEL \
     io.hass.description="REST API SMS Gateway using python-gammu for USB GSM modems" \
     io.hass.type="addon" \
     io.hass.version="1.2.9" \
-    maintainer="PavelVe"
+    maintainer="dima11235"
 
 # Run
 CMD [ "./run.sh" ]

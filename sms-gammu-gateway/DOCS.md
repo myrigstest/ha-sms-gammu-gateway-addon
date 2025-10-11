@@ -247,6 +247,6 @@ See [CHANGELOG.md](./CHANGELOG.md) for complete version history and detailed cha
 
 ## 🆘 Support
 
-- **Issues**: [GitHub Issues](https://github.com/pavelve/home-assistant-addons/issues)
+- **Issues**: [GitHub Issues](https://github.com/dima11235/ha-sms-gammu-gateway-addon/issues)
 - **Swagger UI**: http://your-ha-ip:5000/docs/
 - **Original Project**: [sms-gammu-gateway](https://github.com/pajikos/sms-gammu-gateway)

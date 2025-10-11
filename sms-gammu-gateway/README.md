@@ -12,7 +12,9 @@ REST API SMS Gateway using python-gammu for USB GSM modems (SIM800L, Huawei, etc
 
 This add-on provides a complete SMS gateway solution for Home Assistant, replacing the deprecated "SMS notifications via GSM-modem" integration. It offers both REST API and MQTT interfaces for sending and receiving SMS messages through USB GSM modems.
 
-**Based on** [pajikos/sms-gammu-gateway](https://github.com/pajikos/sms-gammu-gateway) (Apache License 2.0).
+**Maintained by** [dima11235](https://github.com/dima11235).
+
+**Based on** [pajikos/sms-gammu-gateway](https://github.com/pajikos/sms-gammu-gateway) (Apache License 2.0) and the original Home Assistant add-on by [PavelVe](https://github.com/PavelVe).
 
 ## 🌟 Key Features
 
@@ -49,7 +51,7 @@ This add-on provides a complete SMS gateway solution for Home Assistant, replaci
 
 1. Add repository to your Home Assistant:
    ```
-   https://github.com/pavelve/home-assistant-addons
+   https://github.com/dima11235/ha-sms-gammu-gateway-addon
    ```
 2. Find **SMS Gammu Gateway** in add-on store
 3. Click Install
@@ -119,7 +121,7 @@ Enable MQTT in configuration and the add-on will automatically create:
 
 All entities appear under device **"SMS Gateway"** in Home Assistant.
 
-![MQTT Device Overview](https://raw.githubusercontent.com/pavelve/home-assistant-addons/main/sms-gammu-gateway/images/mqtt-device.png)
+![MQTT Device Overview](https://raw.githubusercontent.com/dima11235/ha-sms-gammu-gateway-addon/main/sms-gammu-gateway/images/mqtt-device.png)
 
 ### Method 2: RESTful Notify
 
@@ -138,7 +140,7 @@ notify:
     message_param_name: message
 ```
 
-![Actions Notify Example](https://raw.githubusercontent.com/pavelve/home-assistant-addons/main/sms-gammu-gateway/images/actions-notify.png)
+![Actions Notify Example](https://raw.githubusercontent.com/dima11235/ha-sms-gammu-gateway-addon/main/sms-gammu-gateway/images/actions-notify.png)
 
 ### Method 3: Direct Service Calls
 
@@ -190,7 +192,7 @@ curl -X POST http://192.168.1.x:5000/sms \
 ### Swagger UI
 Access full API documentation at: `http://your-ha-ip:5000/docs/`
 
-![Swagger UI Documentation](https://raw.githubusercontent.com/pavelve/home-assistant-addons/main/sms-gammu-gateway/images/swagger-ui.png)
+![Swagger UI Documentation](https://raw.githubusercontent.com/dima11235/ha-sms-gammu-gateway-addon/main/sms-gammu-gateway/images/swagger-ui.png)
 
 ### Main Endpoints
 
@@ -239,11 +241,12 @@ Access full API documentation at: `http://your-ha-ip:5000/docs/`
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed version history.
 
-## 🤝 Support
+## 🤝 Support & Acknowledgements
 
-- **Issues**: [GitHub Issues](https://github.com/pavelve/home-assistant-addons/issues)
+- **Issues**: [GitHub Issues](https://github.com/dima11235/ha-sms-gammu-gateway-addon/issues)
 - **Documentation**: This page and Swagger UI at `/docs/`
 - **Source**: Based on [sms-gammu-gateway](https://github.com/pajikos/sms-gammu-gateway)
+- **Huge thanks** to [PavelVe](https://github.com/PavelVe) for the original Home Assistant add-on that inspired and powered this fork.
 
 ## 📜 License
 
