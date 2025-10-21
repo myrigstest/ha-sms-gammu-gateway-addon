@@ -7,8 +7,8 @@ build_from:
 labels:
   org.opencontainers.image.title: "SMS Gammu Gateway"
   org.opencontainers.image.description: "REST API SMS Gateway using python-gammu for USB GSM modems"
-  org.opencontainers.image.source: "https://github.com/dima11235/ha-sms-gammu-gateway-addon"
-  org.opencontainers.image.authors: "dima11235"
+  org.opencontainers.image.source: "https://github.com/myrigstest/ha-sms-gammu-gateway-addon"
+  org.opencontainers.image.authors: "myrigstest"
   org.opencontainers.image.licenses: "Apache-2.0"
 args:
   TEMPIO_VERSION: "2021.09.0"
