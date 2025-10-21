@@ -60,6 +60,8 @@ SECRET_FILES = (
     '/config/secrets.yml',
     '/data/secrets.yaml',
     '/data/secrets.yml',
+    '/homeassistant/secrets.yml',
+    '/homeassistant/secrets.yml',
 )
 _secrets_cache = None
 _missing_secret_keys = set()
