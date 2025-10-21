@@ -10,7 +10,7 @@
   "url": "https://github.com/dima11235/ha-sms-gammu-gateway-addon/blob/main/sms-gammu-gateway/README.md",
   "homeassistant": "2022.1.1",
   "options": {
-    "device_path": "/dev/ttyUSB0",
+    "device_path": "/dev/ttyUSB2",
     "pin": "",
     "port": 5000,
     "ssl": false,
@@ -46,7 +46,7 @@
   "ingress": true,
   "ingress_port": 5000,
   "host_network": false,
-  "devices": ["/dev/ttyUSB0:/dev/ttyUSB0:rwm", "/dev/ttyUSB1:/dev/ttyUSB1:rwm", "/dev/ttyACM0:/dev/ttyACM0:rwm"],
+  "devices": ["/dev/ttyUSB0:/dev/ttyUSB0:rwm", "/dev/ttyUSB1:/dev/ttyUSB1:rwm", "/dev/ttyUSB1:/dev/ttyUSB1:rwm", "/dev/ttyACM0:/dev/ttyACM0:rwm"],
   "privileged": ["SYS_RAWIO"],
   "udev": true,
   "init": false,
