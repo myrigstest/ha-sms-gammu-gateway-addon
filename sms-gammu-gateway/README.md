@@ -12,7 +12,7 @@ REST API SMS Gateway using python-gammu for USB GSM modems (SIM800L, Huawei, etc
 
 This add-on provides a complete SMS gateway solution for Home Assistant, replacing the deprecated "SMS notifications via GSM-modem" integration. It offers both REST API and MQTT interfaces for sending and receiving SMS messages through USB GSM modems.
 
-**Maintained by** [dima11235](https://github.com/dima11235).
+**Maintained by** [myrigstest]([https://github.com/myrigstest/ha-sms-gammu-gateway-addon]).
 
 **Based on** [pajikos/sms-gammu-gateway](https://github.com/pajikos/sms-gammu-gateway) (Apache License 2.0) and the original Home Assistant add-on by [PavelVe](https://github.com/PavelVe).
 
@@ -51,7 +51,7 @@ This add-on provides a complete SMS gateway solution for Home Assistant, replaci
 
 1. Add repository to your Home Assistant:
    ```
-   https://github.com/dima11235/ha-sms-gammu-gateway-addon
+   https://github.com/myrigstest/ha-sms-gammu-gateway-addon
    ```
 2. Find **SMS Gammu Gateway** in add-on store
 3. Click Install
